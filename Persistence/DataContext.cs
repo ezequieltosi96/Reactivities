@@ -18,6 +18,8 @@ namespace Persistence
         // using Domain;
         public DbSet<Value> Values { get; set; }
 
+        public DbSet<Activity> Activities { get; set; }
+
         // sobreescribimos este metodo para plantar las semillas
         protected override void OnModelCreating(ModelBuilder builder){
             

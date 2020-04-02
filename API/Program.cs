@@ -33,6 +33,8 @@ namespace API
                     // Migrate() aplica toda migracion pendiente sobre la DB
                     // Si la DB no existe la crea
                     context.Database.Migrate();
+                    // Ejecutamos la seed
+                    Seed.SeedData(context);
                 }
                 // Si encontramos una exepcion la vamos a atrapar
                 catch (System.Exception ex)

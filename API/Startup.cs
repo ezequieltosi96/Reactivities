@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -44,6 +45,11 @@ namespace API
                     policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
                 });
             });
+
+            // Agregamos mediatr como servicio
+            // Utilizamos el handler de List Activity por que solo necesitamos indicar
+            // un solo assembly, ya con esto podemos utilizar cualquier otro handler
+            services.AddMediatR(typeof(Application.Activities.List.Handler).Assembly);
 
             services.AddControllers();
         }
