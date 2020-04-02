@@ -35,6 +35,16 @@ namespace API
                 // Estas configuraciones estan en el archivo appsettings.json
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            // Agregamos CORS (Cross Origin Resourses Sharing) policy
+            services.AddCors(opt =>{
+                opt.AddPolicy("CorsPolicy", policy =>{
+                    // Toda peticion con origen localhost:3000 tendra permiso
+                    // para cualquier metodo y cualquier header
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                });
+            });
+
             services.AddControllers();
         }
 
@@ -57,6 +67,9 @@ namespace API
             app.UseRouting();
 
             app.UseAuthorization();
+
+            // Usamos la cors policy que creamos en el metodo anterior
+            app.UseCors("CorsPolicy");
 
             app.UseEndpoints(endpoints =>
             {
