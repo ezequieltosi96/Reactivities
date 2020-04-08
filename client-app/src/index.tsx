@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import './app/layout/style.css';
+import App from './app/layout/App';
 import * as serviceWorker from './serviceWorker';
 
 // ReactDOM solo tiene un metodo y ese metodo es render()
