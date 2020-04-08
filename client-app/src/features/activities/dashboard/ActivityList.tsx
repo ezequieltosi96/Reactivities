@@ -1,16 +1,18 @@
-import React from "react";
+import React, { SyntheticEvent } from "react";
 import { IActivity } from "../../../app/models/activity";
 import { Item, Button, Label, Segment } from "semantic-ui-react";
 
 interface IProps {
 	activities: IActivity[];
 	selectActivity: (id: string) => void;
+	// modificamos la firma del metodo
+	deleteActivity: (e: SyntheticEvent<HTMLButtonElement>,id: string) => void;
+	submitting: boolean;
 	// Definimos la nueva prop
-	deleteActivity: (id: string) => void;
+	target: string;
 }
 
-export const ActivityList: React.FC<IProps> = ({ activities, selectActivity, deleteActivity }) => {
-	// Agregamos el boton
+export const ActivityList: React.FC<IProps> = ({ activities, selectActivity, deleteActivity, submitting, target }) => {
 	return (
 		<Segment clearing>
 			<Item.Group divided>
@@ -21,19 +23,17 @@ export const ActivityList: React.FC<IProps> = ({ activities, selectActivity, del
 							<Item.Meta>{activity.date}</Item.Meta>
 							<Item.Description>
 								<div>{activity.description}</div>
-								<div>
-									{activity.city}, {activity.venue}
-								</div>
+								<div>{activity.city}, {activity.venue}</div>
 							</Item.Description>
 							<Item.Extra>
+								<Button onClick={() => {selectActivity(activity.id)}} floated="right" content="View" color="blue" />
+								{ // damos nombre unico a nuestro boton y ademas pasamos el evento click a nuestro deleteHandler
+								// si la proìedad target es igual al name del boton entonces tendra el indicador de carga
+								}
 								<Button 
-									onClick={() => {selectActivity(activity.id)}} 
-									floated="right" 
-									content="View" 
-									color="blue" 
-								/>
-								<Button 
-									onClick={() => {deleteActivity(activity.id)}} 
+									name={activity.id}
+									loading={target === activity.id && submitting}
+									onClick={(e) => {deleteActivity(e, activity.id)}} 
 									floated="right" 
 									content="Delete" 
 									color="red" 

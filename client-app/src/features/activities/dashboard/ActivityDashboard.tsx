@@ -1,4 +1,4 @@
-import React from "react";
+import React, { SyntheticEvent } from "react";
 import { IActivity } from "../../../app/models/activity";
 import { Grid } from "semantic-ui-react";
 import { ActivityList } from "./ActivityList";
@@ -14,18 +14,24 @@ interface IProps {
 	setSelectedActivity: (selectedActivity: IActivity | null) => void;
 	createActivity: (activity: IActivity) => void;
 	editActivity: (activity: IActivity) => void;
+	// modificamos la firma del deletehandler
+	deleteActivity: (e:SyntheticEvent<HTMLButtonElement> ,id: string) => void;
+	submitting: boolean;
 	// Definimos la nueva prop
-	deleteActivity: (id: string) => void;
+	target: string;
 }
 
 export const ActivityDashboard: React.FC<IProps> = ({ activities, selectActivity, selectedActivity, editMode, setEditMode,
-														setSelectedActivity, createActivity, editActivity, deleteActivity }) => {
+														setSelectedActivity, createActivity, editActivity, deleteActivity,submitting,
+														target }) => {
 
 	// Pasamos la propiedad a activityList
 	return (
 		<Grid>
 			<Grid.Column width={10}>
-				<ActivityList activities={activities} selectActivity={selectActivity} deleteActivity={deleteActivity}/>
+				<ActivityList activities={activities} selectActivity={selectActivity} 
+								deleteActivity={deleteActivity} submitting={submitting}
+								target={target}/>
 			</Grid.Column>
 			<Grid.Column width={6}>
 				{selectedActivity && !editMode && (<ActivityDetails 
@@ -35,7 +41,7 @@ export const ActivityDashboard: React.FC<IProps> = ({ activities, selectActivity
 													)}
 				{editMode && <ActivityForm key={selectedActivity && selectedActivity.id || 0} 
 									setEditMode={setEditMode} activity={selectedActivity} 
-									createActivity={createActivity} editActivity={editActivity} />
+									createActivity={createActivity} editActivity={editActivity} submitting={submitting}/>
 									}
 			</Grid.Column>
 		</Grid>
