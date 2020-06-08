@@ -1,98 +1,40 @@
-import React, { SyntheticEvent } from "react";
-import { useState, useEffect, Fragment } from "react";
+import React from "react";
+import { Fragment } from "react";
 import { Container } from "semantic-ui-react";
-import { IActivity } from "../models/activity";
-import { NavBar } from "../../features/nav/NavBar";
-import { ActivityDashboard } from "../../features/activities/dashboard/ActivityDashboard";
-import agent from "../api/agent";
-import { LoadingComponent } from "../layout/LoadingComponent";
+import NavBar from "../../features/nav/NavBar";
+import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
+import { observer } from "mobx-react-lite";
+import { Route, withRouter, RouteComponentProps } from "react-router-dom";
+import HomePage from "../../features/home/HomePage";
+import ActivityForm from "../../features/activities/form/ActivityForm";
+import ActivityDetails from "../../features/activities/details/ActivityDetails";
 
-const App = () => {
-	const [activities, setActivities] = useState<IActivity[]>([]);
-	const [selectActivity, setSelectActivity] = useState<IActivity | null>(null);
-	const [editMode, setEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  // definimos una nueva propiedad. Esta contendra el nombre del boton que clickearemos
-  const [target, setTarget] = useState('');
-
-	const handleSelectActivity = (id: string) => {
-		setSelectActivity(activities.filter(a => a.id === id)[0]);
-		setEditMode(false);
-	};
-
-	const handleOpenCreateForm = () => {
-		setSelectActivity(null);
-		setEditMode(true);
-	};
-
-	const handleCreateActivity = (activity: IActivity) => {
-    setSubmitting(true);
-		agent.Activities.create(activity).then(() => {
-			setActivities([...activities, activity]);
-			setSelectActivity(activity);
-			setEditMode(false);
-    }).then(() => setSubmitting(false));
-	};
-
-	const handleEditActivity = (activity: IActivity) => {
-    setSubmitting(true);
-		agent.Activities.update(activity).then(() => {
-			setActivities([
-				...activities.filter(a => a.id !== activity.id),
-				activity
-			]);
-			setSelectActivity(activity);
-			setEditMode(false);
-		}).then(() => setSubmitting(false));
-	};
-
-  // modificamos el handler para que reciba el evento al clickear el boton
-	const handleDeleteActivity = (event: SyntheticEvent<HTMLButtonElement>, id: string) => {
-    setSubmitting(true);
-    // seteamos el name del boton
-    setTarget(event.currentTarget.name);
-		agent.Activities.delete(id).then(() => {
-			setActivities([...activities.filter(a => a.id !== id)]);
-		}).then(() => setSubmitting(false));
-	};
-
-	useEffect(() => {
-		agent.Activities.list()
-			.then(response => {
-				let activities: IActivity[] = [];
-				response.forEach(activity => {
-					activity.date = activity.date.split(".")[0];
-					activities.push(activity);
-				});
-				setActivities(activities);
-			})
-			.then(() => setLoading(false));
-	}, []);
-
-	if (loading) return <LoadingComponent content="Loading activities..." />;
-
-  // pasamos el target a activityDashboard
+const App: React.FC<RouteComponentProps> = ({ location }) => {
 	return (
 		<Fragment>
-			<NavBar OpenCreateForm={handleOpenCreateForm} />
-			<Container style={{ marginTop: "7em" }}>
-				<ActivityDashboard
-					activities={activities}
-					selectActivity={handleSelectActivity}
-					selectedActivity={selectActivity}
-					editMode={editMode}
-					setEditMode={setEditMode}
-					setSelectedActivity={setSelectActivity}
-					createActivity={handleCreateActivity}
-					editActivity={handleEditActivity}
-          deleteActivity={handleDeleteActivity}
-          submitting={submitting}
-          target={target}
-				/>
-			</Container>
+			<Route exact path="/" component={HomePage} />
+			<Route
+				path={
+					"/(.+)" /*este comando significa cualquier otra ruta excepto la ruta '/' */
+				}
+				render={() => (
+					// Con esta propiedad se muestra lo que se renderizara con una ruta distinta a '/'
+					<Fragment>
+						<NavBar />
+						<Container style={{ marginTop: "7em" }}>
+							<Route exact path="/activities" component={ActivityDashboard} />
+							<Route path="/activities/:id" component={ActivityDetails} />
+							<Route
+								key={location.key}
+								path={["/createActivity", "/manage/:id"]}
+								component={ActivityForm}
+							/>
+						</Container>
+					</Fragment>
+				)}
+			/>
 		</Fragment>
 	);
 };
 
-export default App;
+export default withRouter(observer(App));

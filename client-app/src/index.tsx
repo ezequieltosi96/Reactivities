@@ -1,18 +1,20 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './app/layout/style.css';
-import App from './app/layout/App';
-import * as serviceWorker from './serviceWorker';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./app/layout/style.css";
+import App from "./app/layout/App";
+import * as serviceWorker from "./serviceWorker";
+import { BrowserRouter } from "react-router-dom";
+import { observerBatching } from "mobx-react-lite";
+import ScrollToTop from './app/layout/ScrollToTop';
+observerBatching();
 
-// ReactDOM solo tiene un metodo y ese metodo es render()
-// el metodo render tiene dos argumentos.
-// El primero es el componente de nuestro proyecto a renderizar
-// y el segundo es el contenedor donde se renderizara el componente
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+	<BrowserRouter>
+		<ScrollToTop>
+			<App />
+		</ScrollToTop>
+	</BrowserRouter>,
+	document.getElementById("root")
 );
 
 // If you want your app to work offline and load faster, you can change

@@ -5,13 +5,11 @@ axios.defaults.baseURL = "http://localhost:5000/api";
 
 const responseBody = (response: AxiosResponse) => response.data;
 
-// Definimos la funcion sleep
 const sleep = (ms: number) => (response: AxiosResponse) =>
 	new Promise<AxiosResponse>(resolve =>
 		setTimeout(() => resolve(response), ms)
 	);
 
-// modificamos las request para darle el delay
 const request = {
 	get: (url: string) => axios.get(url).then(sleep(1000)).then(responseBody),
 	post: (url: string, body: {}) => axios.post(url, body).then(sleep(1000)).then(responseBody),
