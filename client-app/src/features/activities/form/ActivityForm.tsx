@@ -1,5 +1,5 @@
 import React, { useState, FormEvent, useContext, useEffect } from "react";
-import { Segment, Form, Button } from "semantic-ui-react";
+import { Segment, Form, Button, Grid } from "semantic-ui-react";
 import { IActivity } from "../../../app/models/activity";
 import { v4 as uuid } from "uuid";
 import ActivityStore from "../../../app/stores/activityStore";
@@ -11,7 +11,10 @@ interface FormRouteParams {
 }
 
 // agregamos la prop history para poder navegar entre las rutas
-const ActivityForm: React.FC<RouteComponentProps<FormRouteParams>> = ( {match, history} ) => {
+const ActivityForm: React.FC<RouteComponentProps<FormRouteParams>> = ({
+	match,
+	history,
+}) => {
 	const activityStore = useContext(ActivityStore);
 	const {
 		createActivity,
@@ -19,9 +22,9 @@ const ActivityForm: React.FC<RouteComponentProps<FormRouteParams>> = ( {match, h
 		submitting,
 		activity: initialFormState,
 		loadActivity,
-		clearActivity
+		clearActivity,
 	} = activityStore;
-	
+
 	// Movemos la declaracion de activity arriba de useEffect para poder hacer uso de ella en useEfect
 	const [activity, setActivity] = useState<IActivity>({
 		id: "",
@@ -30,13 +33,13 @@ const ActivityForm: React.FC<RouteComponentProps<FormRouteParams>> = ( {match, h
 		description: "",
 		date: "",
 		city: "",
-		venue: ""
+		venue: "",
 	});
 
 	useEffect(() => {
 		// Chekeamos si ya hay una actividad cargada para que no se ejecute al cerrarse el componente el loadActivity
 		// y solo se ejecute el clearActivity (en el evento "componentWillUnmount")
-		if(match.params.id && activity.id.length === 0){
+		if (match.params.id && activity.id.length === 0) {
 			loadActivity(match.params.id).then(() => {
 				initialFormState && setActivity(initialFormState);
 			});
@@ -44,9 +47,14 @@ const ActivityForm: React.FC<RouteComponentProps<FormRouteParams>> = ( {match, h
 
 		return () => {
 			clearActivity();
-		}
-	}, [loadActivity, match.params.id, clearActivity, initialFormState, activity.id.length]); // agregamos activity.id.length como dependencia
-
+		};
+	}, [
+		loadActivity,
+		match.params.id,
+		clearActivity,
+		initialFormState,
+		activity.id.length,
+	]); // agregamos activity.id.length como dependencia
 
 	const handleOnChangeEvent = (
 		event: FormEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -60,70 +68,78 @@ const ActivityForm: React.FC<RouteComponentProps<FormRouteParams>> = ( {match, h
 		if (activity.id.length === 0) {
 			let newActivity = {
 				...activity,
-				id: uuid()
+				id: uuid(),
 			};
-			createActivity(newActivity).then(() => history.push(`/acivities/${newActivity.id}`));
+			createActivity(newActivity).then(() =>
+				history.push(`/acivities/${newActivity.id}`)
+			);
 		} else {
-			editActivity(activity).then(() => history.push(`/activities/${activity.id}`));
+			editActivity(activity).then(() =>
+				history.push(`/activities/${activity.id}`)
+			);
 		}
 	};
 
 	return (
-		<Segment clearing>
-			<Form onSubmit={handleSubmit}>
-				<Form.Input
-					name="title"
-					onChange={handleOnChangeEvent}
-					placeholder="Title"
-					value={activity.title}
-				/>
-				<Form.TextArea
-					name="description"
-					onChange={handleOnChangeEvent}
-					placeholder="Description"
-					value={activity.description}
-					rows={2}
-				/>
-				<Form.Input
-					name="category"
-					onChange={handleOnChangeEvent}
-					placeholder="Category"
-					value={activity.category}
-				/>
-				<Form.Input
-					name="date"
-					onChange={handleOnChangeEvent}
-					type="datetime-local"
-					placeholder="Date"
-					value={activity.date}
-				/>
-				<Form.Input
-					name="city"
-					onChange={handleOnChangeEvent}
-					placeholder="City"
-					value={activity.city}
-				/>
-				<Form.Input
-					name="venue"
-					onChange={handleOnChangeEvent}
-					placeholder="Venue"
-					value={activity.venue}
-				/>
-				<Button
-					loading={submitting}
-					floated="right"
-					positive
-					type="submit"
-					content="Submit"
-				/>
-				<Button
-					onClick={() => activityStore.closeEditForm()}
-					floated="right"
-					type="button"
-					content="Cancel"
-				/>
-			</Form>
-		</Segment>
+		<Grid>
+			<Grid.Column width={10}>
+				<Segment clearing>
+					<Form onSubmit={handleSubmit}>
+						<Form.Input
+							name="title"
+							onChange={handleOnChangeEvent}
+							placeholder="Title"
+							value={activity.title}
+						/>
+						<Form.TextArea
+							name="description"
+							onChange={handleOnChangeEvent}
+							placeholder="Description"
+							value={activity.description}
+							rows={2}
+						/>
+						<Form.Input
+							name="category"
+							onChange={handleOnChangeEvent}
+							placeholder="Category"
+							value={activity.category}
+						/>
+						<Form.Input
+							name="date"
+							onChange={handleOnChangeEvent}
+							type="datetime-local"
+							placeholder="Date"
+							value={activity.date}
+						/>
+						<Form.Input
+							name="city"
+							onChange={handleOnChangeEvent}
+							placeholder="City"
+							value={activity.city}
+						/>
+						<Form.Input
+							name="venue"
+							onChange={handleOnChangeEvent}
+							placeholder="Venue"
+							value={activity.venue}
+						/>
+						<Button
+							loading={submitting}
+							floated="right"
+							positive
+							type="submit"
+							content="Submit"
+						/>
+						<Button
+							onClick={() => activityStore.closeEditForm()}
+							floated="right"
+							type="button"
+							content="Cancel"
+						/>
+					</Form>
+				</Segment>
+			</Grid.Column>
+		</Grid>
 	);
 };
 
