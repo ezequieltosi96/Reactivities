@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Middleware;
+using Application.Activities;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,56 +28,49 @@ namespace API
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // Este metodo es nuestro inyector de dependencia. Aqui se usara el inyector
         public void ConfigureServices(IServiceCollection services)
         {
-            // using Persistence; para la clase DataContext
-            services.AddDbContext<DataContext>( options => {
-                // using Microsoft.EntityFrameworkCore; para UseSqlite(conectionstring)
-                // La cadena de conexion la obtiene de las configuraciones del proyecto
-                // Estas configuraciones estan en el archivo appsettings.json
+            services.AddDbContext<DataContext>(options =>
+            {
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
 
-            // Agregamos CORS (Cross Origin Resourses Sharing) policy
-            services.AddCors(opt =>{
-                opt.AddPolicy("CorsPolicy", policy =>{
-                    // Toda peticion con origen localhost:3000 tendra permiso
-                    // para cualquier metodo y cualquier header
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy("CorsPolicy", policy =>
+                {
                     policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
                 });
             });
 
-            // Agregamos mediatr como servicio
-            // Utilizamos el handler de List Activity por que solo necesitamos indicar
-            // un solo assembly, ya con esto podemos utilizar cualquier otro handler
             services.AddMediatR(typeof(Application.Activities.List.Handler).Assembly);
 
-            services.AddControllers();
+            // Agregamos fluent validation a nuestros servicios.
+            services.AddControllers()
+                // using FluentValidation.AspNetCore;
+                .AddFluentValidation(cfg => {
+                    // using Application.Activities; para especificar la clase en la cual esta la validacion (Create.cs)
+                    cfg.RegisterValidatorsFromAssemblyContaining<Create>();
+                });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        // Configuracion del proyecto
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Nuestro middleware de error handling debe ir primero en la "pipeline" para capturar todos los errores
+            app.UseMiddleware<ErrorHandlingMiddleware>();
+
             if (env.IsDevelopment())
             {
-                // Pantalla de exepciones de desarrollador
-                app.UseDeveloperExceptionPage();
+                // Comentamos el uso de excepciones de developer para que no nos aparezca la pantalla con el error en la web
+                // app.UseDeveloperExceptionPage();
             }
 
-            // Redirige toda peticion HTTP a una peticion HTTPS (Certificado de seguridad)
-            // En este curso la comentaremos ya que no vamos a usar certificados
-            app.UseHttpsRedirection();
-            // Como comentamos esta linea, en Properties/launchSettings.json quitamos el puerto que escucha la peticion HTTPS
-            // https://localhost:5001;
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseAuthorization();
 
-            // Usamos la cors policy que creamos en el metodo anterior
             app.UseCors("CorsPolicy");
 
             app.UseEndpoints(endpoints =>
